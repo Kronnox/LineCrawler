@@ -8,7 +8,7 @@
 
 // define world colors
 #define COLOR_WORLD_WATER strip.Color(0,0,125)
-#define COLOR_WORLD_IDE strip.Color(0,125,125)
+#define COLOR_WORLD_ICE strip.Color(0,125,125)
 
 // define led-strip parameters
 #define LED_PIN 6
@@ -28,18 +28,14 @@ signed int gcPos;
 // LED-Strip handler
 namespace LED {
 
-  void init() {
+  void initStrip() {
     strip.begin();
     strip.show();
   }
 
-  void setLEDPixel(int i, uint32_t c) {
-    strip.setPixelColor(i, c);
-  }
-
-  void clear() {
+  void clearStrip() {
     for(uint16_t i=0; i<strip.numPixels(); i++) {
-      LED::setLEDPixel(i, COLOR_RESET);
+      strip.setPixelColor(i, COLOR_RESET);
     }
   }
 }
@@ -47,44 +43,36 @@ namespace LED {
 // converts transferred game-data into LED-data
 namespace Renderer {
 
-  // methods for transferring game data
+  //--------------------------------------------//
+  // *** methods for transferring game data *** //
+  //--------------------------------------------//
 
   void setBackground(uint8_t *bg, int wSize) {
     background = bg;
     worldSize = wSize;
   }
 
-  void updatePlayerInfo(signed int pos) {
+  void updatePlayer(signed int pos) {
     playerPos = pos;
   }
 
-  void updateGcPos(signed int pos) {
+  void updateGc(signed int pos) {
     gcPos = pos;
   }
 
-  // methods for the actual rendering
-
-  // main render-method | called to render the whole game
-  void renderTick() {
-    renderWorld();
-    renderEntities();
-    renderPlayer();
-  }
-
-  void renderWorld() {
-    renderBG();
-    renderGC();
-  }
+  //------------------------------------------//
+  // *** methods for the actual rendering *** //
+  //------------------------------------------//
 
   void renderBG() {
     for(int i = 0; i < worldSize; i++) {
-      switch(bg[i]) {
+      switch(background[i]) {
         case 'W':
-          LED::setLEDPixel(i, COLOR_WORLD_WATER);
+          strip.setPixelColor(i, COLOR_WORLD_WATER);
         case 'I':
-          LED::setLEDPixel(i, COLOR_WORLD_ICE);
+          strip.setPixelColor(i, COLOR_WORLD_ICE);
         default:
-          LED::setLEDPixel(i, COLOR_RESET);
+          strip.setPixelColor(i, COLOR_RESET);
       }
     }
   }
@@ -92,8 +80,13 @@ namespace Renderer {
   void renderGC() {
     if(gcPos < 0) return;
     for(int i = 0; i < gcPos+1; i++) {
-      LED::setLEDPixel(i, COLOR_GC);
+      strip.setPixelColor(i, COLOR_GC);
     }
+  }
+
+  void renderWorld() {
+    renderBG();
+    renderGC();
   }
 
   void renderEntities() {
@@ -101,6 +94,13 @@ namespace Renderer {
   }
 
   void renderPlayer() {
-    LED::setLEDPixel(playerPos, COLOR_PLAYER);
+    strip.setPixelColor(playerPos, COLOR_PLAYER);
+  }
+
+  // ** main render-method | called to render the whole game **
+  void renderTick() {
+    renderWorld();
+    renderEntities();
+    renderPlayer();
   }
 }
