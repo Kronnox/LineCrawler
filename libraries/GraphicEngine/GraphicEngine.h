@@ -1,22 +1,6 @@
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 
-// define general colors
-#define COLOR_RESET strip.Color(0,0,0)
-#define COLOR_GC_0 strip.Color(255,255,255)
-#define COLOR_GC_1 strip.Color(40,40,50)
-#define COLOR_GC_2 strip.Color(8,8,10)
-#define COLOR_PLAYER strip.Color(0,255,0)
-
-// define world colors
-#define COLOR_WORLD_WATER strip.Color(0,0,125)
-#define COLOR_WORLD_ICE strip.Color(0,125,125)
-
-// define led-strip parameters
-#define LED_PIN 6
-
-// ---=[ only edit above this line]=---
-
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(WORLD_SIZE, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 signed int gcPos;
