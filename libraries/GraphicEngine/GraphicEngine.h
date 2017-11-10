@@ -54,7 +54,11 @@ namespace Renderer {
   }
 
   void renderPlayer() {
-    strip.setPixelColor(world.player.pos, COLOR_PLAYER);
+    if(!world.player.cooldown) {
+      strip.setPixelColor(world.player.pos, COLOR_PLAYER);
+    } else {
+      strip.setPixelColor(world.player.pos, strip.Color((int (COLOR_COOLDOWN_STEP*COOLDOWN_TICKS)),255,0));
+    }
   }
 
   // ** main render-method | called to render the whole game **
