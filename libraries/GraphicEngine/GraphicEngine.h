@@ -57,7 +57,7 @@ namespace Renderer {
     if(!world.player.cooldown) {
       strip.setPixelColor(world.player.pos, COLOR_PLAYER);
     } else {
-      strip.setPixelColor(world.player.pos, strip.Color((int (COLOR_COOLDOWN_STEP*COOLDOWN_TICKS)),255,0));
+      strip.setPixelColor(world.player.pos, strip.Color((int (COLOR_COOLDOWN_STEP*world.player.cooldown)),255,0));
     }
   }
 
