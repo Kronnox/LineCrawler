@@ -50,7 +50,17 @@ namespace Renderer {
   }
 
   void renderEntities() {
+    for(uint8_t i = 0; i < MAX_ENTITY_NUMBER; i++) {
+      if(world.e[i].isAlive) {
+        strip.setPixelColor(world.e.pos, COLOR_ENT_0);
+        /**
+        switch(world.e[i].race) {
+          case 0:
 
+        }
+        **/
+      }
+    }
   }
 
   void renderPlayer() {
