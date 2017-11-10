@@ -32,8 +32,10 @@ namespace Renderer {
       switch(world.level->bg[i]) {
         case 'W':
           strip.setPixelColor(i, COLOR_WORLD_WATER);
+          break;
         case 'I':
           strip.setPixelColor(i, COLOR_WORLD_ICE);
+          break;
         default:
           strip.setPixelColor(i, COLOR_RESET);
       }
