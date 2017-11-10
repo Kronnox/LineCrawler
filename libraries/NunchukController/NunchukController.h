@@ -16,7 +16,7 @@ namespace NunchukController
 	uint8_t buffer[6];
 	uint8_t joy_center_x = DEFAULT_JOY_CENTRE_X, joy_center_y = DEFAULT_JOY_CENTRE_Y;
 
-	static void init()
+	static void initncc()
 	{
 		Wire.begin();
 		delay(1);

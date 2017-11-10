@@ -1,4 +1,4 @@
-struct Entity 
+struct Entity
 {
   uint8_t pos;
   uint8_t moveState;
