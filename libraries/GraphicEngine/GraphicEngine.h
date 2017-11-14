@@ -54,7 +54,7 @@ namespace Renderer {
   void renderEntities() {
     for(uint8_t i = 0; i < MAX_ENTITY_NUMBER; i++) {
       if(world.e[i].isAlive) {
-        strip.setPixelColor(world.e.pos, COLOR_ENT_0);
+        strip.setPixelColor(world.e[i].pos, COLOR_ENT_0);
         /**
         switch(world.e[i].race) {
           case 0:
@@ -78,9 +78,10 @@ namespace Renderer {
 
     // update GC
 
-    if(world.aGc > WORLD_SIZE) return;
-    uint8_t aGc = WORLD_SIZE - world.aGc;
-    gcPos = aGc;
+    if(!(world.aGc > WORLD_SIZE)) {
+      uint8_t aGc = WORLD_SIZE - world.aGc;
+      gcPos = aGc;
+    }
 
     // start rendering
 
@@ -92,5 +93,9 @@ namespace Renderer {
     renderGC();
 
     strip.show();
+  }
+
+  namespace ColorHelper {
+
   }
 }
