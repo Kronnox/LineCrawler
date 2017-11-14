@@ -3,12 +3,18 @@
 
 World world;
 Level levels[1];
+long lastTick;
 
 #include "NunchukController.h"
 #include "GraphicEngine.h"
 
 void setup() 
 {
+  for(int i = 0; i < 10; i++)
+  {
+    levels[0].bg[i+20]='W';
+    levels[0].bg[i+35]='I';
+  }
   levels[0].gc = true;
   NunchukController::initncc();
   NunchukController::get_data();
@@ -24,7 +30,7 @@ void loadLevel(Level *level)
 {
   world.level = level;
   memcpy(world.e, level->e, MAX_ENTITY_NUMBER*sizeof(Entity));
-  world.aGc = 180;//0xFF;
+  world.aGc = 180;
   world.ticks = 0;
   world.player.realPos = 0;
   world.player.cooldown = 0;
@@ -96,15 +102,20 @@ void (*EntityActions[])(Entity *) = {&MAIK_FUNCTION, &Entity1ActionHeischkamp, &
 
 void loop() 
 {
-  if(world.level)
+  long t = millis();
+  if(lastTick + MS_PER_TICK < t)
   {
-    NunchukController::get_data();
-    gameMainLoop();
-    Renderer::renderTick();
-  }
-  else
-  {
-    loadLevel(&levels[0]);
+    lastTick = t;
+    if(world.level)
+    {
+      NunchukController::get_data();
+      gameMainLoop();
+      Renderer::renderTick();
+    }
+    else
+    {
+      loadLevel(&levels[0]);
+    }
   }
 }
 
@@ -152,10 +163,12 @@ void entityActions()
 
 void collisionRequest()
 {
-  if(world.player.pos == WORLD_SIZE)
+  if(world.player.pos >= WORLD_SIZE)
   {
 	  //Start Animation
+   
 	  //Load next level
+   loadLevel(world.level);
   }
   if(world.player.cooldown == COOLDOWN_TICKS)
   {
