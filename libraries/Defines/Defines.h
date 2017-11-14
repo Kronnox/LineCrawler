@@ -37,12 +37,12 @@
 #define COLOR_GC_1 strip.Color(40,40,50)
 #define COLOR_GC_2 strip.Color(8,8,10)
 #define COLOR_PLAYER strip.Color(0,255,0)
-#define COLOR_COOLDOWN_STEP (200/COOLDOWN_TICKS)
+#define COLOR_COOLDOWN_STEP (150/COOLDOWN_TICKS)
 #define COLOR_ENT_0 strip.Color(255,0,0)
 
 // define world colors
-#define COLOR_WORLD_WATER strip.Color(0,0,125)
-#define COLOR_WORLD_ICE strip.Color(0,125,125)
+#define COLOR_WORLD_WATER strip.Color(0,0,25)
+#define COLOR_WORLD_ICE strip.Color(0,25,25)
 
 // define led-strip parameters
 #define LED_PIN 6
