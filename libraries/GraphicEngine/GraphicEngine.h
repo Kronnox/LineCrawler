@@ -144,8 +144,8 @@ namespace Renderer {
   void renderGcAt(uint16_t pPos) {
     if(gcPos < 0) return;
     if(pPos <= gcPos) strip.setPixelColor(pPos, COLOR_GC);
-    if(pPos = gcPos+1) strip.setPixelColor(pPos, changeBrightness(COLOR_GC, 50));
-    if(pPos = gcPos+2) strip.setPixelColor(pPos, changeBrightness(COLOR_GC, 10));
+    if(pPos = gcPos+1) strip.setPixelColor(pPos, LED::changeBrightness(COLOR_GC, 50));
+    if(pPos = gcPos+2) strip.setPixelColor(pPos, LED::changeBrightness(COLOR_GC, 10));
   }
 
   // renders all Entities as defined in the level data
