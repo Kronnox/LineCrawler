@@ -16,24 +16,40 @@ void setup()
     levels[0].bg[i+35]='I';
   }
   levels[0].gc = true;
+  //Test Hannig:
+  levels[0].e[0].isAlive=true;
+  levels[0].e[0].pos = 50;
+  levels[0].e[0].race = HANNIG;
+  levels[0].e[0].movePattern = 10;
+
+  //Test Heischkamp:
+  levels[0].e[1].isAlive=true;
+  levels[0].e[1].pos = 65;
+  levels[0].e[1].race = HEISCHKAMP;
+  levels[0].e[1].movePattern = 10;
+
+  //Test Hannig2:
+  levels[0].e[2].isAlive=true;
+  levels[0].e[2].pos = 80;
+  levels[0].e[2].race = HANNIG;
+  levels[0].e[2].movePattern = 5;
+  
   NunchukController::initncc();
   NunchukController::get_data();
   //NunchukController::calibrate();
   LED::initStrip();
   Serial.begin(9600);
-  //Renderer::setBackground(background, WORLD_SIZE);
-  //Renderer-Function set world
-  
 }
 
 void loadLevel(Level *level)
 {
   world.level = level;
   memcpy(world.e, level->e, MAX_ENTITY_NUMBER*sizeof(Entity));
-  world.aGc = 180;
+  world.aGc = WORLD_SIZE;
   world.ticks = 0;
-  world.player.realPos = 0;
+  world.player.realPos = NOT_GO_DOWN_AREA;
   world.player.cooldown = 0;
+  Renderer::playResetWipe();
 }
 
 void MAIK_FUNCTION(Entity *self)
@@ -60,7 +76,7 @@ void Entity1ActionHannig(Entity *self)
 	if(world.ticks % HANNIG_SPEED_TICKS_PER_LED == 0)
 	{
 		self->moveState++;
-		if(self->moveState >= (self->movePattern << 2))
+		if(self->moveState >= (self->movePattern * 4))
 			self->moveState=0;
 		switch(self->moveState/self->movePattern)
 		{
@@ -145,7 +161,16 @@ void playerActions()
   {
     if(world.player.realPos>NOT_GO_DOWN_AREA || NunchukController::joy_y()>0)
     {
-      world.player.realPos += NunchukController::joy_y()*MOVEMENT_MULTIPLIER;
+      switch(world.level->bg[world.player.pos]) {
+        case 'W':
+          world.player.realPos += NunchukController::joy_y()*MOVEMENT_WATER_MULTIPLIER;
+          break;
+        case 'I':
+          world.player.realPos += NunchukController::joy_y()*MOVEMENT_ICE_MULTIPLIER;
+          break;
+        default:
+          world.player.realPos += NunchukController::joy_y()*MOVEMENT_MULTIPLIER;
+      }
     }
   }
 }
@@ -163,25 +188,20 @@ void entityActions()
 
 void collisionRequest()
 {
-  if(world.player.pos >= WORLD_SIZE)
+  if(world.player.pos >= WORLD_SIZE-1)
   {
 	  //Start Animation
    
 	  //Load next level
    loadLevel(world.level);
   }
-  if(world.player.cooldown == COOLDOWN_TICKS)
+  for(uint8_t i = 0; i < MAX_ENTITY_NUMBER; i++)
   {
-	  for(uint8_t i = 0; i < MAX_ENTITY_NUMBER; i++)
-	  {
-  		if(world.e[i].isAlive)
-  		{
-  		  if(world.e[i].pos - world.player.pos <= PLAYER_ATTACK_RANGE)
-        {
-          
-        }
-  	  }
-	  }
+    for(int z = 1; z <= PLAYER_ATTACK_RANGE; z++) {
+      if(world.player.cooldown == COOLDOWN_TICKS-z+1 && world.e[i].pos - world.player.pos == PLAYER_ATTACK_RANGE-z) {
+        world.e[i].isAlive=false;
+      }
+    }
   }
   for(uint8_t i = 0; i < MAX_ENTITY_NUMBER; i++)
   {
@@ -202,9 +222,9 @@ void collisionRequest()
   	  }
 	  }
 	}  
-  /*if(world.aGc - world.player.pos <= WORLD_SIZE)
+  if(WORLD_SIZE - world.aGc >= world.player.pos)
   {
   	//Start Animation
-  	//loadLevel(world.level);
-  }*/
+  	loadLevel(world.level);
+  }
 }

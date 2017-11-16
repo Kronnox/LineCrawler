@@ -1,6 +1,6 @@
 #######################################
 # Syntax Coloring Map For LineCrawler GraphicEngine
-####################################### 
+#######################################
 # Class
 #######################################
 
@@ -10,8 +10,8 @@ LED	KEYWORD1
 Renderer	KEYWORD1
 
 #######################################
-# Methods and Functions 
-#######################################	
+# Methods and Functions
+#######################################
 
 renderTick	KEYWORD2
 clear			KEYWORD2
