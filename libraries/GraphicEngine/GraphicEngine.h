@@ -101,7 +101,7 @@ namespace LED {
     return strip.Color(rd*255, gd*255, bd*255);
   }
 
-  // modify brighttness of a rgb color (0-100)
+  // modify brightness of a rgb color (0-100)
   uint32_t changeBrightness(uint32_t c, uint8_t br) {
     double rd = (double) (c >> 16)/100;
     double gd = (double) (c >>  8)/100;
@@ -114,10 +114,19 @@ namespace LED {
 // converts transferred game-data into LED-data
 namespace Renderer {
 
+  // turns the actual GC position into the needed render position
+  void updateGC() {
+    if(!(world.aGc > WORLD_SIZE)) {
+      uint8_t aGc = WORLD_SIZE - world.aGc;
+      gcPos = aGc;
+    }
+  }
+
   //-----------------------------------------------//
   // *** methods for the actual Game rendering *** //
   //-----------------------------------------------//
 
+  // renders the BackGround at pixel 'pPos' as defined in the level data
   void renderBgAt(uint16_t pPos) {
     switch(world.level->bg[pPos]) {
       case 'W':
@@ -131,6 +140,7 @@ namespace Renderer {
     }
   }
 
+  // renders "GarbageCompactor" at pixel 'pPos'
   void renderGcAt(uint16_t pPos) {
     if(gcPos < 0) return;
     if(pPos <= gcPos) strip.setPixelColor(pPos, COLOR_GC);
@@ -138,6 +148,7 @@ namespace Renderer {
     if(pPos = gcPos+2) strip.setPixelColor(pPos, changeBrightness(COLOR_GC, 10));
   }
 
+  // renders all Entities as defined in the level data
   void renderEntities() {
     for(uint8_t i = 0; i < MAX_ENTITY_NUMBER; i++) {
       if(world.e[i].isAlive) {
@@ -146,6 +157,7 @@ namespace Renderer {
     }
   }
 
+  // renders Player and all Player dedicated animations
   void renderPlayer() {
     if(!world.player.cooldown) {
       strip.setPixelColor(world.player.pos, COLOR_PLAYER);
@@ -166,6 +178,7 @@ namespace Renderer {
     }
   }
 
+  // renders Background and "GarbageCompactor" at pixel 'pPos'
   void renderWorldAt(uint16_t pPos) {
     renderBgAt(pPos);
     renderGcAt(pPos);
@@ -175,6 +188,7 @@ namespace Renderer {
   // *** methods for Animation rendering *** //
   //-----------------------------------------//
 
+  // renders the color changing pixel at the end of the LED-strip
   void playFinishGlow() {
     strip.setPixelColor(WORLD_SIZE-1, LED::hueWheel(finishHue));
     if(finishHue >= 254) {
@@ -191,11 +205,15 @@ namespace Renderer {
       strip.show();
       delay(RESET_WIPE_DELAY);
     }
+
+    updateGC();
+
     for(uint16_t i=strip.numPixels()-1; i>0; i--) {
       renderBgAt(i);
       strip.show();
       delay(RESET_WIPE_DELAY);
     }
+
   }
 
   //--------------------------------------------------------------//
@@ -204,12 +222,7 @@ namespace Renderer {
 
   void renderTick() {
 
-    // update GC
-
-    if(!(world.aGc > WORLD_SIZE)) {
-      uint8_t aGc = WORLD_SIZE - world.aGc;
-      gcPos = aGc;
-    }
+    updateGC();
 
     // start rendering
 
