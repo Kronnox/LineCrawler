@@ -100,6 +100,15 @@ namespace LED {
 
     return strip.Color(rd*255, gd*255, bd*255);
   }
+
+  // modify brighttness of a rgb color (0-100)
+  uint32_t changeBrightness(uint32_t c, uint8_t br) {
+    double rd = (double) (c >> 16)/100;
+    double gd = (double) (c >>  8)/100;
+    double bd = (double) c/100;
+
+    return strip.Color(rd*br, gd*br, bd*br);
+  }
 }
 
 // converts transferred game-data into LED-data
@@ -124,9 +133,9 @@ namespace Renderer {
 
   void renderGcAt(uint16_t pPos) {
     if(gcPos < 0) return;
-    if(pPos <= gcPos) strip.setPixelColor(pPos, COLOR_GC_0);
-    //if(pPos <= gcPos+1) strip.setPixelColor(pPos, COLOR_GC_1);
-    //if(pPos <= gcPos+2) strip.setPixelColor(pPos, COLOR_GC_2);
+    if(pPos <= gcPos) strip.setPixelColor(pPos, COLOR_GC);
+    if(pPos = gcPos+1) strip.setPixelColor(pPos, changeBrightness(COLOR_GC, 50));
+    if(pPos = gcPos+2) strip.setPixelColor(pPos, changeBrightness(COLOR_GC, 10));
   }
 
   void renderEntities() {

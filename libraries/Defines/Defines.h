@@ -38,9 +38,7 @@
 
 // define general colors
 #define COLOR_RESET strip.Color(0,0,0)
-#define COLOR_GC_0 strip.Color(255,25,0)
-#define COLOR_GC_1 strip.Color(125,65,50)
-#define COLOR_GC_2 strip.Color(12,8,0)
+#define COLOR_GC strip.Color(255,20,0)
 #define COLOR_PLAYER strip.Color(0,255,0)
 #define COLOR_COOLDOWN_STEP (255/COOLDOWN_TICKS)
 #define COLOR_ENT_0 strip.Color(255,0,0)
