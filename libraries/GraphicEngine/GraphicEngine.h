@@ -19,10 +19,11 @@ namespace LED {
     strip.show();
   }
 
-  void clearStrip() {
-    for(uint16_t i=0; i<strip.numPixels(); i++) {
-      strip.setPixelColor(i, COLOR_RESET);
+  void clearStrip(bool update) {
+    for(uint16_t i=0; i<WORLD_SIZE; i++) {
+      strip.setPixelColor(i, strip.Color(0,0,0));
     }
+    if(update) strip.show();
   }
 
   //------------------------------------//
@@ -103,11 +104,16 @@ namespace LED {
 
   // modify brightness of a rgb color (0-100)
   uint32_t changeBrightness(uint32_t c, uint8_t br) {
-    double rd = (double) (c >> 16)/100;
-    double gd = (double) (c >>  8)/100;
-    double bd = (double) c/100;
+    uint8_t *p,
+      r = (uint8_t)(c >> 16),
+      g = (uint8_t)(c >>  8),
+      b = (uint8_t)c;
 
-    return strip.Color(rd*br, gd*br, bd*br);
+      r = (r * br) >> 8;
+      g = (g * br) >> 8;
+      b = (b * br) >> 8;
+
+    return strip.Color(r, g, b);
   }
 }
 
@@ -119,6 +125,8 @@ namespace Renderer {
     if(!(world.aGc > WORLD_SIZE)) {
       uint8_t aGc = WORLD_SIZE - world.aGc;
       gcPos = aGc;
+    } else {
+      gcPos = 0;
     }
   }
 
@@ -130,13 +138,13 @@ namespace Renderer {
   void renderBgAt(uint16_t pPos) {
     switch(world.level->bg[pPos]) {
       case 'W':
-        strip.setPixelColor(pPos, COLOR_WORLD_WATER);
+        strip.setPixelColor(pPos, LED::changeBrightness(COLOR_WORLD_WATER,30));
         break;
       case 'I':
-        strip.setPixelColor(pPos, COLOR_WORLD_ICE);
+        strip.setPixelColor(pPos, LED::changeBrightness(COLOR_WORLD_ICE,30));
         break;
       default:
-        strip.setPixelColor(pPos, COLOR_RESET);
+        strip.setPixelColor(pPos, LED::changeBrightness(COLOR_RESET,5));
     }
   }
 
@@ -152,7 +160,26 @@ namespace Renderer {
   void renderEntities() {
     for(uint8_t i = 0; i < MAX_ENTITY_NUMBER; i++) {
       if(world.e[i].isAlive) {
-        strip.setPixelColor(world.e[i].pos, COLOR_ENT_0);
+        switch(world.e[i].race) {
+          case LUKANNEK:
+            strip.setPixelColor(world.e[i].pos, COLOR_ENT_1);
+            break;
+          case HEISCHKAMP:
+            strip.setPixelColor(world.e[i].pos, COLOR_ENT_2);
+            break;
+          case MAIK:
+            strip.setPixelColor(world.e[i].pos, COLOR_ENT_3);
+            break;
+          default:
+            strip.setPixelColor(world.e[i].pos, COLOR_ENT_0);
+        }
+
+        if(world.e[i].race == KRAUSE) {
+          for(int z = 0; z <= KRAUSE_ATTACK_RANGE; z++) {
+            if(world.e[i].moveState == world.e[i].movePattern-z)
+              strip.setPixelColor(world.e[i].pos-KRAUSE_ATTACK_RANGE+z, LED::changeBrightness(COLOR_ENT_0,50));
+          }
+        }
       }
     }
   }
@@ -173,7 +200,7 @@ namespace Renderer {
         strip.setPixelColor(world.player.pos, strip.Color(255,255,255));
       } else {
         // player fades for Cooldown effect
-        strip.setPixelColor(world.player.pos, strip.Color(0,(int (225-COLOR_COOLDOWN_STEP*world.player.cooldown)),0));
+        strip.setPixelColor(world.player.pos, LED::changeBrightness(strip.Color(0,(int (255-COLOR_COOLDOWN_STEP*world.player.cooldown)),0),75));
       }
     }
   }
@@ -206,7 +233,28 @@ namespace Renderer {
       delay(RESET_WIPE_DELAY);
     }
 
-    updateGC();
+    for(uint16_t i=strip.numPixels()-1; i>0; i--) {
+      renderBgAt(i);
+      strip.show();
+      delay(RESET_WIPE_DELAY);
+    }
+
+    LED::clearStrip(true);
+  }
+
+  void playDeathWipe(uint16_t pPos) {
+    uint8_t br = 100;
+    for(uint16_t i=0; i<strip.numPixels(); i++) {
+      if((100-(i/2))>0) {
+        br = 100-(i/2);
+      } else {
+        br = 0;
+      }
+      if((pPos+i)<WORLD_SIZE) strip.setPixelColor(pPos+i, LED::changeBrightness(COLOR_ENT_0,br));
+      if((pPos-i)>0) strip.setPixelColor(pPos-i, LED::changeBrightness(COLOR_ENT_0,br));
+      strip.show();
+      delay(RESET_WIPE_DELAY);
+    }
 
     for(uint16_t i=strip.numPixels()-1; i>0; i--) {
       renderBgAt(i);
@@ -214,7 +262,9 @@ namespace Renderer {
       delay(RESET_WIPE_DELAY);
     }
 
+    LED::clearStrip(true);
   }
+
 
   //--------------------------------------------------------------//
   // *** main render-method | called to render the whole game *** //
@@ -226,7 +276,7 @@ namespace Renderer {
 
     // start rendering
 
-    LED::clearStrip();
+    LED::clearStrip(false);
 
     for(int i = 0; i < WORLD_SIZE; i++)
         renderWorldAt(i);

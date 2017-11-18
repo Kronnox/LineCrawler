@@ -5,26 +5,36 @@ World world;
 Level levels[1];
 long lastTick;
 
+bool button_last;
+bool blackout = true;
+
 #include "NunchukController.h"
 #include "GraphicEngine.h"
 
 void setup() 
 {
-  for(int i = 0; i < 10; i++)
-  {
-    levels[0].bg[i+20]='W';
-    levels[0].bg[i+35]='I';
+  for(int i = 30; i < 35; i++) {
+    levels[0].bg[i]='W';
   }
+  for(int i = 35; i < 45; i++) {
+    levels[0].bg[i]='I';
+  }
+  for(int i = 65; i < 95; i++) {
+    levels[0].bg[i]='W';
+  }
+  for(int i = 115; i < 145; i++) {
+    levels[0].bg[i]='I';
+  }
+  
   levels[0].gc = true;
-  //Test Hannig:
+  //Test Maik:
   levels[0].e[0].isAlive=true;
-  levels[0].e[0].pos = 50;
-  levels[0].e[0].race = HANNIG;
-  levels[0].e[0].movePattern = 10;
+  levels[0].e[0].pos = 18;
+  levels[0].e[0].race = MAIK;
 
   //Test Heischkamp:
   levels[0].e[1].isAlive=true;
-  levels[0].e[1].pos = 65;
+  levels[0].e[1].pos = 53;
   levels[0].e[1].race = HEISCHKAMP;
   levels[0].e[1].movePattern = 10;
 
@@ -32,7 +42,19 @@ void setup()
   levels[0].e[2].isAlive=true;
   levels[0].e[2].pos = 80;
   levels[0].e[2].race = HANNIG;
-  levels[0].e[2].movePattern = 5;
+  levels[0].e[2].movePattern = 2;
+
+  //Test Heischkamp:
+  levels[0].e[3].isAlive=true;
+  levels[0].e[3].pos = 93;
+  levels[0].e[3].race = HEISCHKAMP;
+  levels[0].e[3].movePattern = 10;
+
+  //Test Krause:
+  levels[0].e[4].isAlive=true;
+  levels[0].e[4].pos = 142;
+  levels[0].e[4].race = KRAUSE;
+  levels[0].e[4].movePattern = 60;
   
   NunchukController::initncc();
   NunchukController::get_data();
@@ -45,7 +67,7 @@ void loadLevel(Level *level)
 {
   world.level = level;
   memcpy(world.e, level->e, MAX_ENTITY_NUMBER*sizeof(Entity));
-  world.aGc = WORLD_SIZE;
+  world.aGc = WORLD_SIZE+5;
   world.ticks = 0;
   world.player.realPos = NOT_GO_DOWN_AREA;
   world.player.cooldown = 0;
@@ -93,14 +115,11 @@ void Entity1ActionHannig(Entity *self)
 
 void Entity1ActionLukannek(Entity *self)
 {
-	if(world.ticks % LUKANNEK_SPEED_TICKS_PER_LED == 0)
-	{
 		if(self->moveState)
 			self->moveState--;
 		else
-			self->pos--;
-		
-	}
+      if(world.ticks % LUKANNEK_SPEED_TICKS_PER_LED == 0)
+			  self->pos--;
 }
 
 void Entity1ActionKrause(Entity *self)
@@ -116,6 +135,14 @@ void Entity1ActionKrause(Entity *self)
 void (*EntityActions[])(Entity *) = {&MAIK_FUNCTION, &Entity1ActionHeischkamp, &Entity1ActionHannig, &Entity1ActionLukannek, &Entity1ActionKrause};
 
 
+void checkCbutton() {
+  if(!button_last && NunchukController::button_c()) {
+    blackout = !blackout;
+    if(blackout) LED::clearStrip(true);
+  }
+  button_last = NunchukController::button_c();
+}
+
 void loop() 
 {
   long t = millis();
@@ -126,7 +153,15 @@ void loop()
     {
       NunchukController::get_data();
       gameMainLoop();
-      Renderer::renderTick();
+      checkCbutton();
+      if(!blackout) {
+        Renderer::renderTick();
+      }
+      while(blackout) {
+        NunchukController::get_data();
+        checkCbutton();
+        delay(1);
+      }
     }
     else
     {
@@ -143,8 +178,8 @@ void gameMainLoop()
   {
 	  world.aGc--;
   }
-  collisionRequest();
   world.ticks++;
+  collisionRequest();
 }
 
 void playerActions()
@@ -157,7 +192,7 @@ void playerActions()
   {
     world.player.cooldown=COOLDOWN_TICKS;
   }
-  if(abs(NunchukController::joy_y())>REACTION_THRESHOLD)
+  if(abs(NunchukController::joy_y())>REACTION_THRESHOLD && world.player.cooldown < COOLDOWN_TICKS-(PLAYER_ATTACK_RANGE*4))
   {
     if(world.player.realPos>NOT_GO_DOWN_AREA || NunchukController::joy_y()>0)
     {
@@ -199,7 +234,15 @@ void collisionRequest()
   {
     for(int z = 1; z <= PLAYER_ATTACK_RANGE; z++) {
       if(world.player.cooldown == COOLDOWN_TICKS-z+1 && world.e[i].pos - world.player.pos == PLAYER_ATTACK_RANGE-z) {
-        world.e[i].isAlive=false;
+        if(world.e[i].race == KRAUSE)
+        {
+          world.e[i].race = LUKANNEK;
+          world.e[i].moveState = 40;
+        }
+        else
+        {
+          world.e[i].isAlive=false;
+        }
       }
     }
   }
@@ -210,13 +253,14 @@ void collisionRequest()
   	  if(world.e[i].pos == world.player.pos)
   	  {
   		  //Start Animation
+        //Renderer::playDeathWipe(world.player.pos);
   		  loadLevel(world.level);
   	  }
-  	  if(world.e[i].race == KRAUSE)
+  	  if(world.e[i].race == KRAUSE && world.e[i].moveState == 0)
   	  {
   		  if(world.e[i].pos - world.player.pos <= KRAUSE_ATTACK_RANGE)
   		  {
-  			  //Start Animation
+  			  //ANIMATION
   			  loadLevel(world.level);
   		  }
   	  }
